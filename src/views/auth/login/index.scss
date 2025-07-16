@@ -1,10 +1,12 @@
 @use '@styles/variables.scss' as *;
 
 .login {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   width: 100%;
   height: 100vh;
+  overflow: hidden;
 
   .el-input__inner {
     &:focus {
@@ -17,58 +19,65 @@
     line-height: var(--el-component-custom-height);
   }
 
-  .right-wrap {
-    position: relative;
-    flex: 1;
+  // 背景图
+  .login-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
     height: 100%;
 
-    .top-right-wrap {
-      position: fixed;
-      top: 30px;
-      right: 30px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-
-      .btn {
-        display: inline-block;
-        padding: 5px;
-        margin-left: 15px;
-        cursor: pointer;
-        user-select: none;
-        transition: all 0.3s;
-
-        i {
-          font-size: 18px;
-        }
-
-        &:hover {
-          color: var(--main-color) !important;
-        }
-      }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
+  }
 
-    .header {
-      display: none;
-    }
+  // 左侧登录表单
+  .left-wrap {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30%;
+    height: 100%;
+    padding: 0 60px;
 
     .login-wrap {
-      position: absolute;
-      inset: 0;
-      width: 440px;
-      height: 610px;
-      padding: 0 5px;
-      margin: auto;
-      overflow: hidden;
-      background-size: cover;
-      border-radius: 5px;
+      width: 100%;
+      max-width: 440px;
+      padding: 40px;
+      // background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      // 白色背景遮罩
+      // box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
       .form {
         box-sizing: border-box;
-        height: 100%;
-        padding: 40px 0;
-        widows: 100%;
+        width: 100%;
+
+        .header {
+          display: flex;
+          align-items: center;
+          margin-bottom: 30px;
+
+          .icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+          }
+
+          h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--art-text-gray-900);
+          }
+        }
 
         .title {
           margin-left: -2px;
@@ -99,6 +108,33 @@
         .el-input,
         .login-btn {
           height: 40px !important;
+        }
+
+        .captcha-container {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          width: 100%;
+
+          .el-input {
+            flex: 1;
+            min-width: 0;
+          }
+
+          .captcha-img {
+            flex-shrink: 0;
+            width: 120px;
+            height: 40px;
+            cursor: pointer;
+            object-fit: cover;
+            border: 1px solid var(--el-border-color);
+            border-radius: 8px;
+            transition: all 0.3s;
+
+            &:hover {
+              border-color: var(--main-color);
+            }
+          }
         }
 
         .drag-verify {
@@ -175,6 +211,41 @@
       }
     }
   }
+
+  // 右侧控制按钮
+  .right-wrap {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    height: 100%;
+
+    .top-right-wrap {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+
+      .btn {
+        display: inline-block;
+        padding: 5px;
+        margin-left: 15px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.3s;
+
+        i {
+          font-size: 18px;
+        }
+
+        &:hover {
+          color: var(--main-color) !important;
+        }
+      }
+    }
+  }
 }
 
 @media only screen and (max-width: $device-ipad-pro) {
@@ -182,20 +253,14 @@
     width: 100%;
     height: 100vh;
 
-    .right-wrap {
-      margin: auto;
+    .left-wrap {
+      width: 100%;
+      padding: 0 30px;
 
       .login-wrap {
-        position: relative;
-        width: 440px;
-        height: auto;
-        padding: 0;
-        border-radius: 0;
-        box-shadow: none;
-
-        .form {
-          margin-top: 10vh;
-        }
+        max-width: 440px;
+        padding: 30px;
+        margin: 0 auto;
       }
     }
   }
@@ -206,18 +271,16 @@
     position: fixed;
     top: 0;
 
-    .right-wrap {
+    .left-wrap {
       box-sizing: border-box;
       width: 100% !important;
-      padding: 0 30px;
-      margin: auto;
+      padding: 0 20px;
 
       .login-wrap {
         width: 100%;
+        padding: 20px;
 
         .form {
-          margin-top: 12vh;
-
           .input-wrap {
             .input-label {
               display: none;

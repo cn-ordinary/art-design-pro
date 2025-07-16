@@ -26,7 +26,7 @@ const buildRoutePath = (route: AppRouteRecord, parentPath: string): string => {
   if (!route.path) return ''
 
   // iframe 类型路由直接使用原始路径
-  if (route.meta?.isIframe) return route.path
+  if (route.meta?.iframe) return route.path
 
   // 拼接并规范化路径
   return parentPath ? `${parentPath}/${route.path}`.replace(/\/+/g, '/') : route.path

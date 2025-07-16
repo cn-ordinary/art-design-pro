@@ -138,9 +138,9 @@
   /** 序号列的标题 */
   const INDEX_COLUMN_LABEL = '序号'
   /** 默认每页显示数量 */
-  const DEFAULT_PAGE_SIZE = 20
+  const DEFAULT_PAGE_SIZE = 10
   /** 默认分页大小选项 */
-  const DEFAULT_PAGINATION_SIZES = [10, 20, 30, 50, 100]
+  const DEFAULT_PAGINATION_SIZES = [10, 15, 30, 50, 100]
   /** 默认顶部边距 */
   const DEFAULT_MARGIN_TOP = 20
   /** 分页器区域高度 */
@@ -165,9 +165,9 @@
   // 分页配置接口
   interface PaginationConfig {
     /** 当前页码 */
-    current: number
+    pageNum: number
     /** 每页显示条目个数 */
-    size: number
+    pageSize: number
     /** 总条目数 */
     total: number
     /** 每页显示个数选择器的选项列表 */
@@ -339,13 +339,13 @@
 
   // ========== 默认配置 ==========
   const defaultPaginationConfig: PaginationConfig = {
-    current: 1,
-    size: DEFAULT_PAGE_SIZE,
+    pageNum: 1,
+    pageSize: DEFAULT_PAGE_SIZE,
     total: 0,
     sizes: DEFAULT_PAGINATION_SIZES,
     align: 'center',
     layout: '',
-    hideOnSinglePage: true,
+    hideOnSinglePage: false,
     componentSize: 'default'
   }
 
@@ -356,8 +356,8 @@
     highlightCurrentRow: false,
     emptyText: '暂无数据',
     border: null,
-    stripe: null,
-    showHeaderBackground: null,
+    stripe: true,
+    showHeaderBackground: true,
     size: undefined,
     tooltipEffect: 'dark',
     showSummary: false,
@@ -498,7 +498,7 @@
   /** 处理后的表格数据 */
   const tableData = computed(() => {
     const { data, pagination } = props
-    const { current, size, total } = mergedPaginationConfig.value
+    const { pageNum, pageSize, total } = mergedPaginationConfig.value
 
     // 如果不显示分页或使用后端分页，直接返回原始数据
     if (!pagination || total > data.length) {
@@ -506,30 +506,30 @@
     }
 
     // 前端分页处理
-    const start = (current - 1) * size
-    const end = start + size
+    const start = (pageNum - 1) * pageSize
+    const end = start + pageSize
     return data.slice(start, end)
   })
 
   // ========== 分页数据 ==========
   /** 当前页码 */
   const currentPage = computed({
-    get: () => mergedPaginationConfig.value.current,
+    get: () => mergedPaginationConfig.value.pageNum,
     set: (val) => {
       emit('pagination:current-change', val)
       if (props.pagination) {
-        emit('pagination:change', { ...mergedPaginationConfig.value, current: val })
+        emit('pagination:change', { ...mergedPaginationConfig.value, pageNum: val })
       }
     }
   })
 
   /** 每页显示数量 */
   const pageSize = computed({
-    get: () => mergedPaginationConfig.value.size,
+    get: () => mergedPaginationConfig.value.pageSize,
     set: (val) => {
       emit('pagination:size-change', val)
       if (props.pagination) {
-        emit('pagination:change', { ...mergedPaginationConfig.value, size: val })
+        emit('pagination:change', { ...mergedPaginationConfig.value, pageSize: val })
       }
     }
   })
@@ -545,8 +545,8 @@
    */
   const getGlobalIndex = (index: number) => {
     if (!props.pagination) return index + 1
-    const { current, size } = mergedPaginationConfig.value
-    return (current - 1) * size + index + 1
+    const { pageNum, pageSize } = mergedPaginationConfig.value
+    return (pageNum - 1) * pageSize + index + 1
   }
 
   /**

@@ -1,41 +1,20 @@
 <template>
   <div class="login">
-    <LoginLeftView></LoginLeftView>
+    <!-- 背景图 -->
+    <div class="login-bg">
+      <img src="@/assets/img/login/assets-login-bg-white-439b0654.avif" alt="登录背景" />
+    </div>
 
-    <div class="right-wrap">
-      <div class="top-right-wrap">
-        <div class="btn theme-btn" @click="toggleTheme">
-          <i class="iconfont-sys">
-            {{ isDark ? '&#xe6b5;' : '&#xe725;' }}
-          </i>
-        </div>
-        <ElDropdown @command="changeLanguage" popper-class="langDropDownStyle">
-          <div class="btn language-btn">
-            <i class="iconfont-sys icon-language">&#xe611;</i>
-          </div>
-          <template #dropdown>
-            <ElDropdownMenu>
-              <div v-for="lang in languageOptions" :key="lang.value" class="lang-btn-item">
-                <ElDropdownItem
-                  :command="lang.value"
-                  :class="{ 'is-selected': locale === lang.value }"
-                >
-                  <span class="menu-txt">{{ lang.label }}</span>
-                  <i v-if="locale === lang.value" class="iconfont-sys icon-check">&#xe621;</i>
-                </ElDropdownItem>
-              </div>
-            </ElDropdownMenu>
-          </template>
-        </ElDropdown>
-      </div>
-      <div class="header">
-        <ArtLogo class="icon" />
-        <h1>{{ systemName }}</h1>
-      </div>
+    <!-- 左侧登录表单 -->
+    <div class="left-wrap">
       <div class="login-wrap">
         <div class="form">
-          <h3 class="title">{{ $t('login.title') }}</h3>
-          <p class="sub-title">{{ $t('login.subTitle') }}</p>
+          <div class="header">
+            <ArtLogo class="icon" />
+            <h1>{{ $t('login.title') }}</h1>
+          </div>
+          <h3 class="title">{{ systemName }}</h3>
+          <!-- <p class="sub-title">{{ $t('login.subTitle') }}</p> -->
           <ElForm
             ref="formRef"
             :model="formData"
@@ -43,18 +22,6 @@
             @keyup.enter="handleSubmit"
             style="margin-top: 25px"
           >
-            <ElFormItem prop="account">
-              <ElSelect v-model="formData.account" @change="setupAccount" class="account-select">
-                <ElOption
-                  v-for="account in accounts"
-                  :key="account.key"
-                  :label="account.label"
-                  :value="account.key"
-                >
-                  <span>{{ account.label }}</span>
-                </ElOption>
-              </ElSelect>
-            </ElFormItem>
             <ElFormItem prop="username">
               <ElInput :placeholder="$t('login.placeholder[0]')" v-model.trim="formData.username" />
             </ElFormItem>
@@ -68,28 +35,23 @@
                 show-password
               />
             </ElFormItem>
-            <div class="drag-verify">
-              <div class="drag-verify-content" :class="{ error: !isPassing && isClickPass }">
-                <ArtDragVerify
-                  ref="dragVerify"
-                  v-model:value="isPassing"
-                  :text="$t('login.sliderText')"
-                  textColor="var(--art-gray-800)"
-                  :successText="$t('login.sliderSuccessText')"
-                  :progressBarBg="getCssVar('--el-color-primary')"
-                  background="var(--art-gray-200)"
-                  handlerBg="var(--art-main-bg-color)"
-                />
-              </div>
-              <p class="error-text" :class="{ 'show-error-text': !isPassing && isClickPass }">{{
-                $t('login.placeholder[2]')
-              }}</p>
-            </div>
 
+            <ElFormItem prop="captchaCode">
+              <div class="captcha-container">
+                <ElInput
+                  :placeholder="$t('login.placeholder[2]')"
+                  v-model.trim="formData.captchaCode"
+                  type="text"
+                  radius="8px"
+                  autocomplete="off"
+                />
+                <img class="captcha-img" :src="captchaBase64Image" @click="getCaptcha" alt="" />
+              </div>
+            </ElFormItem>
+
+            <!-- 记住密码，暂未实现 -->
             <div class="forget-password">
-              <ElCheckbox v-model="formData.rememberPassword">{{
-                $t('login.rememberPwd')
-              }}</ElCheckbox>
+              <ElCheckbox>{{ $t('login.rememberPwd') }}</ElCheckbox>
               <RouterLink :to="RoutesAlias.ForgetPassword">{{ $t('login.forgetPwd') }}</RouterLink>
             </div>
 
@@ -115,95 +77,162 @@
         </div>
       </div>
     </div>
+
+    <!-- 右侧控制按钮 -->
+    <div class="right-wrap">
+      <div class="top-right-wrap">
+        <div class="btn theme-btn" @click="toggleTheme">
+          <i class="iconfont-sys">
+            {{ isDark ? '&#xe6b5;' : '&#xe725;' }}
+          </i>
+        </div>
+        <ElDropdown @command="changeLanguage" popper-class="langDropDownStyle">
+          <div class="btn language-btn">
+            <i class="iconfont-sys icon-language">&#xe611;</i>
+          </div>
+          <template #dropdown>
+            <ElDropdownMenu>
+              <div v-for="lang in languageOptions" :key="lang.value" class="lang-btn-item">
+                <ElDropdownItem
+                  :command="lang.value"
+                  :disabled="lang.disabled"
+                  :class="{ 'is-selected': locale === lang.value }"
+                >
+                  <span class="menu-txt">{{ lang.label }}</span>
+                  <i v-if="locale === lang.value" class="iconfont-sys icon-check">&#xe621;</i>
+                </ElDropdownItem>
+              </div>
+            </ElDropdownMenu>
+          </template>
+        </ElDropdown>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
   import AppConfig from '@/config'
-  import { RoutesAlias } from '@/router/routesAlias'
-  import { ElNotification, ElMessage } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
-  import { getCssVar } from '@/utils/ui'
-  import { languageOptions } from '@/locales'
   import { LanguageEnum, SystemThemeEnum } from '@/enums/appEnum'
-  import { useI18n } from 'vue-i18n'
+  import { LoginTypeEnum } from '@/enums/auth'
+  import { languageOptions } from '@/locales'
+  import { RoutesAlias } from '@/router/routesAlias'
+  import { useUserStore } from '@/store/modules/user'
   import { HttpError } from '@/utils/http/error'
+  import { ElMessage, ElNotification } from 'element-plus'
+  import { useI18n } from 'vue-i18n'
+  // 切换主题
+  import { AuthService } from '@/api/auth-api'
+  import { AccountService } from '@/api/account-api'
+  import { useTheme } from '@/composables/useTheme'
+  import { useSettingStore } from '@/store/modules/setting'
+  import type { FormInstance, FormRules } from 'element-plus'
 
   defineOptions({ name: 'Login' })
 
   const { t } = useI18n()
-  import { useSettingStore } from '@/store/modules/setting'
-  import type { FormInstance, FormRules } from 'element-plus'
 
-  type AccountKey = 'super' | 'admin' | 'user'
+  type AccountKey = 'super-admin' | 'guest-user'
 
   export interface Account {
-    key: AccountKey
-    label: string
     userName: string
     password: string
-    roles: string[]
+    captchaId: string
+    captchaCode: string
+    loginType: LoginTypeEnum
   }
+
+  const captchaBase64Image = ref('')
 
   const accounts = computed<Account[]>(() => [
     {
-      key: 'super',
-      label: t('login.roles.super'),
-      userName: 'Super',
+      userName: 'super-admin',
       password: '123456',
-      roles: ['R_SUPER']
+      captchaId: '',
+      captchaCode: '',
+      loginType: LoginTypeEnum.PASSWORD_LOGIN
     },
     {
-      key: 'admin',
-      label: t('login.roles.admin'),
-      userName: 'Admin',
+      userName: 'guest-user',
       password: '123456',
-      roles: ['R_ADMIN']
-    },
-    {
-      key: 'user',
-      label: t('login.roles.user'),
-      userName: 'User',
-      password: '123456',
-      roles: ['R_USER']
+      captchaId: '',
+      captchaCode: '',
+      loginType: LoginTypeEnum.PASSWORD_LOGIN
     }
   ])
 
   const settingStore = useSettingStore()
   const { isDark, systemThemeType } = storeToRefs(settingStore)
 
-  const dragVerify = ref()
-
   const userStore = useUserStore()
   const router = useRouter()
-  const isPassing = ref(false)
-  const isClickPass = ref(false)
 
   const systemName = AppConfig.systemInfo.name
   const formRef = ref<FormInstance>()
 
   const formData = reactive({
-    account: '',
     username: '',
     password: '',
-    rememberPassword: true
+    captchaId: '',
+    captchaCode: '',
+    loginType: LoginTypeEnum.PASSWORD_LOGIN
   })
 
   const rules = computed<FormRules>(() => ({
     username: [{ required: true, message: t('login.placeholder[0]'), trigger: 'blur' }],
-    password: [{ required: true, message: t('login.placeholder[1]'), trigger: 'blur' }]
+    password: [{ required: true, message: t('login.placeholder[1]'), trigger: 'blur' }],
+    captchaCode: [{ required: true, message: t('login.placeholder[2]'), trigger: 'blur' }]
   }))
 
   const loading = ref(false)
 
   onMounted(() => {
-    setupAccount('super')
+    setupAccount('super-admin')
+    getCaptcha()
   })
+
+  async function getCaptcha() {
+    try {
+      const captchaRes = await AuthService.fetchCaptcha()
+      captchaBase64Image.value = captchaRes.captchaBase64Image
+      formData.captchaId = captchaRes.captchaId
+      // 判断当前环境，自动填充验证码
+      if (import.meta.env.DEV) {
+        formData.captchaCode = captchaRes.captchaCode || ''
+      } else {
+        formData.captchaCode = ''
+      }
+      // beginRefreshCaptchaInterval(captchaRes.expireSeconds)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  // // 修改定义处的类型为 number | null
+  // const refreshCaptchaInterval = ref<number | null>(null)
+
+  // // 开始刷新验证码的定时器
+  // function beginRefreshCaptchaInterval(expireSeconds: number) {
+  //   if (refreshCaptchaInterval.value === null) {
+  //     refreshCaptchaInterval.value = window.setInterval(
+  //       () => {
+  //         getCaptcha()
+  //       },
+  //       (expireSeconds - 5) * 1000
+  //     )
+  //   }
+  // }
+
+  // // 停止刷新验证码的定时器
+  // function stopRefreshCaptchaInterval() {
+  //   if (refreshCaptchaInterval.value !== null) {
+  //     window.clearInterval(refreshCaptchaInterval.value)
+  //     refreshCaptchaInterval.value = null
+  //   }
+  // }
 
   // 设置账号
   const setupAccount = (key: AccountKey) => {
-    const selectedAccount = accounts.value.find((account: Account) => account.key === key)
-    formData.account = key
+    const selectedAccount = accounts.value.find((account: Account) => account.userName === key)
     formData.username = selectedAccount?.userName ?? ''
     formData.password = selectedAccount?.password ?? ''
   }
@@ -217,36 +246,23 @@
       const valid = await formRef.value.validate()
       if (!valid) return
 
-      // 拖拽验证
-      if (!isPassing.value) {
-        isClickPass.value = true
-        return
-      }
-
       loading.value = true
 
       // 登录请求
-      const { username, password } = formData
-
-      const { token, refreshToken } = await UserService.login({
-        userName: username,
-        password
-      })
-
-      // 验证token
-      if (!token) {
-        throw new Error('Login failed - no token received')
-      }
+      const accountLoginRes = await AuthService.accountLogin(formData)
 
       // 存储token和用户信息
-      userStore.setToken(token, refreshToken)
-      const userInfo = await UserService.getUserInfo()
-      userStore.setUserInfo(userInfo)
+      userStore.setToken(accountLoginRes.accessToken, accountLoginRes.refreshToken)
+
+      // 获取用户信息
+      const accountDetails = await AccountService.getAccountDetails(undefined)
+      userStore.setUserInfo(accountDetails)
       userStore.setLoginStatus(true)
 
       // 登录成功处理
-      showLoginSuccessNotice()
-      router.push('/')
+      // stopRefreshCaptchaInterval()
+      showLoginSuccessNotice(accountDetails.nickname)
+      await router.push('/')
     } catch (error) {
       // 处理 HttpError
       if (error instanceof HttpError) {
@@ -258,24 +274,18 @@
       }
     } finally {
       loading.value = false
-      resetDragVerify()
     }
   }
 
-  // 重置拖拽验证
-  const resetDragVerify = () => {
-    dragVerify.value.reset()
-  }
-
   // 登录成功提示
-  const showLoginSuccessNotice = () => {
+  const showLoginSuccessNotice = (nickname: string) => {
     setTimeout(() => {
       ElNotification({
         title: t('login.success.title'),
         type: 'success',
         duration: 2500,
         zIndex: 10000,
-        message: `${t('login.success.message')}, ${systemName}!`
+        message: `${t('login.success.message')}, ${nickname}!`
       })
     }, 150)
   }
@@ -288,10 +298,6 @@
     locale.value = lang
     userStore.setLanguage(lang)
   }
-
-  // 切换主题
-  import { useTheme } from '@/composables/useTheme'
-  import { UserService } from '@/api/usersApi'
 
   const toggleTheme = () => {
     let { LIGHT, DARK } = SystemThemeEnum

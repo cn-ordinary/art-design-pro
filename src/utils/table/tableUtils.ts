@@ -20,7 +20,7 @@ export interface TableError {
 export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => {
   // 处理空响应
   if (!response) {
-    return { records: [], total: 0, current: 1, size: 10 }
+    return { records: [], total: 0, pageNum: 1, pageSize: 10 }
   }
 
   // 如果响应直接是数组
@@ -28,8 +28,8 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
     return {
       records: response,
       total: response.length,
-      current: 1,
-      size: response.length
+      pageNum: 1,
+      pageSize: response.length
     }
   }
 
@@ -110,7 +110,7 @@ export const defaultResponseAdapter = <T>(response: unknown): ApiResponse<T> => 
 
   // 兜底处理：返回空数据
   console.warn('[tableUtils] 无法识别的响应格式:', response)
-  return { records: [], total: 0, current: 1, size: 10 }
+  return { records: [], total: 0, pageNum: 1, pageSize: 10 }
 }
 
 /**
@@ -138,13 +138,13 @@ export const updatePaginationFromResponse = <T>(
 ): void => {
   // 使用响应中的分页信息，如果没有则保持当前值
   pagination.total = response.total ?? pagination.total ?? 0
-  pagination.current = response.current ?? pagination.current ?? 1
-  pagination.size = response.size ?? pagination.size ?? 10
+  pagination.pageNum = response.current ?? pagination.pageNum ?? 1
+  pagination.pageSize = response.size ?? pagination.pageSize ?? 10
 
   // 边界检查：确保当前页不超过总页数
-  const maxPage = Math.max(1, Math.ceil(pagination.total / pagination.size))
-  if (pagination.current > maxPage) {
-    pagination.current = maxPage
+  const maxPage = Math.max(1, Math.ceil(pagination.total / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
   }
 }
 

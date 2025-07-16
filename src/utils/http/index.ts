@@ -3,6 +3,7 @@ import { useUserStore } from '@/store/modules/user'
 import { ApiStatus } from './status'
 import { HttpError, handleError, showError } from './error'
 import { $t } from '@/locales'
+import { LoginDeviceTypeEnum } from '@/enums/auth'
 
 // 常量定义
 const REQUEST_TIMEOUT = 15000 // 请求超时时间(毫秒)
@@ -22,18 +23,29 @@ const axiosInstance = axios.create({
   baseURL: VITE_API_URL, // API地址
   withCredentials: VITE_WITH_CREDENTIALS === 'true', // 是否携带cookie，默认关闭
   transformRequest: [(data) => JSON.stringify(data)], // 请求数据转换为 JSON 字符串
-  validateStatus: (status) => status >= 200 && status < 300, // 只接受 2xx 的状态码
+  validateStatus: (status) => status >= 1 && status < 500, // 只接受 2xx 的状态码
   headers: {
     get: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
     post: { 'Content-Type': 'application/json;charset=utf-8' }
   },
   transformResponse: [
     (data, headers) => {
-      const contentType = headers['content-type']
-      if (contentType && contentType.includes('application/json')) {
+      // 如果data已经是对象，直接返回
+      if (typeof data === 'object' && data !== null) {
+        return data
+      }
+
+      // 如果data是字符串，尝试解析为JSON
+      if (typeof data === 'string') {
         try {
           return JSON.parse(data)
         } catch {
+          // 如果解析失败，检查Content-Type
+          const contentType = headers['content-type']
+          if (contentType && contentType.includes('application/json')) {
+            // Content-Type是JSON但解析失败，可能是格式问题
+            console.warn('后端数据返回格式解析异常:', data)
+          }
           return data
         }
       }
@@ -48,8 +60,9 @@ axiosInstance.interceptors.request.use(
     const { accessToken } = useUserStore()
 
     // 设置 token 和 请求头
+    request.headers.set('DEVICE', LoginDeviceTypeEnum.PC.toString())
     if (accessToken) {
-      request.headers.set('Authorization', accessToken)
+      request.headers.set('X-ICODE-AUTHENTICATION', accessToken)
       request.headers.set('Content-Type', 'application/json')
     }
 
@@ -64,16 +77,45 @@ axiosInstance.interceptors.request.use(
 // 响应拦截器
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse<Api.Http.BaseResponse>) => {
-    const { code, msg } = response.data
+    // 确保response.data是对象
+    let responseData = response.data
+
+    // 如果response.data是字符串，尝试解析为JSON
+    if (typeof responseData === 'string') {
+      try {
+        responseData = JSON.parse(responseData)
+        response.data = responseData
+      } catch {
+        console.warn('Failed to parse response data as JSON:', responseData)
+        throw new HttpError('Invalid JSON response', ApiStatus.error)
+      }
+    }
+
+    // 确保responseData是对象且有code属性
+    if (typeof responseData !== 'object' || responseData === null) {
+      console.warn('Response data is not an object:', responseData)
+      throw new HttpError('Invalid response format', ApiStatus.error)
+    }
+
+    const { code, message } = responseData
+
+    // 确保code存在
+    if (code === undefined || code === null) {
+      console.warn('Response missing code property:', responseData)
+      throw new HttpError('Response missing code property', ApiStatus.error)
+    }
+
+    // console.log('Response data:', responseData)
+    // console.log('Response code:', code)
 
     switch (code) {
       case ApiStatus.success:
         return response
       case ApiStatus.unauthorized:
         logOut()
-        throw new HttpError(msg || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
+        throw new HttpError(message || $t('httpMsg.unauthorized'), ApiStatus.unauthorized)
       default:
-        throw new HttpError(msg || $t('httpMsg.requestFailed'), code)
+        throw new HttpError(message || $t('httpMsg.requestFailed'), code)
     }
   },
   (error) => {
@@ -123,6 +165,7 @@ async function request<T = any>(config: ExtendedAxiosRequestConfig): Promise<T> 
     return res.data.data as T
   } catch (error) {
     if (error instanceof HttpError) {
+      console.log(error)
       // 根据配置决定是否显示错误消息
       const showErrorMessage = config.showErrorMessage !== false
       showError(error, showErrorMessage)

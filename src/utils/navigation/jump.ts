@@ -14,8 +14,8 @@ export const openExternalLink = (link: string) => {
  */
 export const handleMenuJump = (item: AppRouteRecord, jumpToFirst: boolean = false) => {
   // 处理外部链接
-  const { link, isIframe } = item.meta
-  if (link && !isIframe) {
+  const { link, iframe } = item.meta
+  if (link && !iframe) {
     return openExternalLink(link)
   }
 
@@ -27,7 +27,7 @@ export const handleMenuJump = (item: AppRouteRecord, jumpToFirst: boolean = fals
   // 递归查找第一个可见的叶子节点菜单
   const findFirstLeafMenu = (items: AppRouteRecord[]): AppRouteRecord => {
     for (const child of items) {
-      if (!child.meta.isHide) {
+      if (!child.meta.hide) {
         return child.children?.length ? findFirstLeafMenu(child.children) : child
       }
     }

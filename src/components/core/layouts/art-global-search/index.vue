@@ -162,7 +162,7 @@
     const result: AppRouteRecord[] = []
 
     const flattenAndMatch = (item: AppRouteRecord) => {
-      if (item.meta?.isHide) return
+      if (item.meta?.hide) return
 
       const lowerItemTitle = formatMenuTitle(item.meta.title).toLowerCase()
 

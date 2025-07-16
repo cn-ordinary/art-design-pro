@@ -19,7 +19,7 @@
       <div class="scroll-bar">
         <template v-for="item in processedMenuList" :key="item.meta.title">
           <div
-            v-if="!item.meta.isHide"
+            v-if="!item.meta.hide"
             class="item"
             :class="{ active: item.isActive }"
             @click="handleMenuJump(item, true)"

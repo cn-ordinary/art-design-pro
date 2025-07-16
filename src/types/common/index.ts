@@ -32,6 +32,12 @@ export interface Option {
   children?: Option[]
 }
 
+// 选项类型 加上可选字段
+export interface SelectOption extends Option {
+  // 可选字段，用于标识选项类型
+  type?: string
+}
+
 // 时间范围类型
 export interface TimeRange {
   startTime: string

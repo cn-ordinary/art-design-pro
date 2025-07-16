@@ -188,7 +188,7 @@ function convertRouteComponent(
   // 是否为一级菜单
   const isFirstLevel = depth === 0 && route.children?.length === 0
 
-  if (route.meta.isIframe) {
+  if (route.meta.iframe) {
     handleIframeRoute(converted, route, iframeRoutes)
   } else if (isFirstLevel) {
     handleLayoutRoute(converted, route, component as string)

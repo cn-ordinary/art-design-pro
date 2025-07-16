@@ -15,13 +15,13 @@ export interface RouteMeta extends Record<string | number | symbol, unknown> {
   /** 文本徽章 */
   showTextBadge?: string
   /** 是否在菜单中隐藏 */
-  isHide?: boolean
+  hide?: boolean
   /** 是否在标签页中隐藏 */
   isHideTab?: boolean
   /** 外部链接 */
   link?: string
   /** 是否为iframe */
-  isIframe?: boolean
+  iframe?: boolean
   /** 是否缓存 */
   keepAlive?: boolean
   /** 操作权限 */

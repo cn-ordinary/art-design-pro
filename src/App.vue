@@ -9,7 +9,7 @@
   import zh from 'element-plus/es/locale/lang/zh-cn'
   import en from 'element-plus/es/locale/lang/en'
   import { systemUpgrade } from './utils/sys'
-  import { UserService } from './api/usersApi'
+  import { AccountService } from './api/account-api'
   import { setThemeTransitionClass } from './utils/theme/animation'
   import { checkStorageCompatibility } from './utils/storage'
 
@@ -40,7 +40,7 @@
   const getUserInfo = async () => {
     if (userStore.isLogin) {
       try {
-        const data = await UserService.getUserInfo()
+        const data = await AccountService.getAccountDetails(undefined)
         userStore.setUserInfo(data)
       } catch (error) {
         console.error('获取用户信息失败', error)

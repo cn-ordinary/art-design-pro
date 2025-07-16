@@ -26,7 +26,7 @@
   </ElSubMenu>
 
   <ElMenuItem
-    v-else-if="!item.meta.isHide"
+    v-else-if="!item.meta.hide"
     :index="item.path || item.meta.title"
     @click="goPage(item)"
   >
@@ -73,7 +73,7 @@
 
   // 过滤后的子菜单项（不包含隐藏的）
   const filteredChildren = computed(() => {
-    return props.item.children?.filter((child) => !child.meta.isHide) || []
+    return props.item.children?.filter((child) => !child.meta.hide) || []
   })
 
   // 计算当前项是否有可见的子菜单

@@ -236,7 +236,7 @@
   const buildMenuTypeTag = (row: AppRouteRecord) => {
     if (row.children && row.children.length > 0) {
       return 'info'
-    } else if (row.meta?.link && row.meta?.isIframe) {
+    } else if (row.meta?.link && row.meta?.iframe) {
       return 'success'
     } else if (row.path) {
       return 'primary'
@@ -249,7 +249,7 @@
   const buildMenuTypeText = (row: AppRouteRecord) => {
     if (row.children && row.children.length > 0) {
       return '目录'
-    } else if (row.meta?.link && row.meta?.isIframe) {
+    } else if (row.meta?.link && row.meta?.iframe) {
       return '内嵌'
     } else if (row.path) {
       return '菜单'
@@ -337,8 +337,8 @@
       prop: 'status',
       label: '隐藏菜单',
       formatter: (row) => {
-        return h(ElTag, { type: row.meta.isHide ? 'danger' : 'info' }, () =>
-          row.meta.isHide ? '是' : '否'
+        return h(ElTag, { type: row.meta.hide ? 'danger' : 'info' }, () =>
+          row.meta.hide ? '是' : '否'
         )
       }
     },

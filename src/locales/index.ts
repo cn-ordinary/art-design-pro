@@ -17,8 +17,8 @@ const messages = {
 
 // 语言选项
 export const languageOptions = [
-  { value: LanguageEnum.ZH, label: '简体中文' },
-  { value: LanguageEnum.EN, label: 'English' }
+  { value: LanguageEnum.ZH, label: '简体中文', disabled: false },
+  { value: LanguageEnum.EN, label: 'English', disabled: true }
 ]
 
 /**

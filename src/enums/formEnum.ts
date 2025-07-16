@@ -12,3 +12,20 @@ export enum TableSizeEnum {
   SMALL = 'small',
   LARGE = 'large'
 }
+// 操作类型
+export enum OperateType {
+  ADD = 'add',
+  EDIT = 'edit',
+  DELETE = 'delete',
+  VIEW = 'view',
+  MORE = 'more',
+  IMPORT = 'import',
+  EXPORT = 'export',
+  PRINT = 'print',
+  RESET = 'reset',
+  SEARCH = 'search',
+  CANCEL = 'cancel',
+  CONFIRM = 'confirm',
+  DOWNLOAD = 'download',
+  UPLOAD = 'upload'
+}

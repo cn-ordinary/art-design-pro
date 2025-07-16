@@ -89,6 +89,7 @@
                 <div v-for="item in languageOptions" :key="item.value" class="lang-btn-item">
                   <ElDropdownItem
                     :command="item.value"
+                    :disabled="item.disabled"
                     :class="{ 'is-selected': locale === item.value }"
                   >
                     <span class="menu-txt">{{ item.label }}</span>
@@ -145,12 +146,12 @@
                 <div class="user-head">
                   <img class="cover" src="@imgs/user/avatar.webp" style="float: left" />
                   <div class="user-wrap">
-                    <span class="name">{{ userInfo.userName }}</span>
+                    <span class="name">{{ userInfo.accountName }}</span>
                     <span class="email">art.design@gmail.com</span>
                   </div>
                 </div>
                 <ul class="user-menu">
-                  <li @click="goPage('/system/user-center')">
+                  <li @click="goPage(RoutesAlias.UserCenter)">
                     <i class="menu-icon iconfont-sys">&#xe734;</i>
                     <span class="menu-txt">{{ $t('topBar.user.userCenter') }}</span>
                   </li>
@@ -199,6 +200,7 @@
   import { themeAnimation } from '@/utils/theme/animation'
   import { useCommon } from '@/composables/useCommon'
   import { useHeaderBar } from '@/composables/useHeaderBar'
+  import { RoutesAlias } from '@/router/routesAlias'
 
   defineOptions({ name: 'ArtHeaderBar' })
 

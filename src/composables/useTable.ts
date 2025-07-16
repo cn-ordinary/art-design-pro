@@ -34,10 +34,10 @@ export interface UseTableConfig<
     columnsFactory?: () => ColumnOption<T>[]
     /** 自定义分页字段映射 */
     paginationKey?: {
-      /** 当前页码字段名，默认为 'current' */
-      current?: string
+      /** 当前页码字段名，默认为 'pageNum' */
+      pageNum?: string
       /** 每页条数字段名，默认为 'size' */
-      size?: string
+      pageSize?: string
     }
   }
 
@@ -105,7 +105,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
       apiParams = {} as Partial<P>,
       immediate = true,
       columnsFactory,
-      paginationKey = { current: 'current', size: 'size' }
+      paginationKey = { pageNum: 'pageNum', pageSize: 'pageSize' }
     },
     transform: { dataTransformer, responseAdapter = defaultResponseAdapter } = {},
     performance: {
@@ -119,8 +119,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
   } = config
 
   // 🔧 分页字段名配置
-  const pageKey = paginationKey?.current || 'current'
-  const sizeKey = paginationKey?.size || 'size'
+  const pageKey = paginationKey?.pageNum || 'pageNum'
+  const sizeKey = paginationKey?.pageSize || 'pageSize'
 
   // 响应式触发器，用于手动更新缓存统计信息
   const cacheUpdateTrigger = ref(0)
@@ -175,8 +175,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
 
   // 分页配置
   const pagination = reactive<Api.Common.PaginatingParams>({
-    current: (searchParams as any)[pageKey] || 1,
-    size: (searchParams as any)[sizeKey] || 10,
+    pageNum: (searchParams as any)[pageKey] || 1,
+    pageSize: (searchParams as any)[sizeKey] || 10,
     total: 0
   })
 
@@ -248,8 +248,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     }
 
     // 创建新的取消控制器
-    const currentController = new AbortController()
-    abortController = currentController
+    const pageNumController = new AbortController()
+    abortController = pageNumController
 
     loading.value = true
     error.value = null
@@ -259,8 +259,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
         {},
         searchParams,
         {
-          [pageKey]: pagination.current,
-          [sizeKey]: pagination.size
+          [pageKey]: pagination.pageNum,
+          [sizeKey]: pagination.pageSize
         },
         params || {}
       ) as P
@@ -273,11 +273,11 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
           updatePaginationFromResponse(pagination, cachedItem.response)
 
           // 🔧 修复：避免重复设置相同的值，防止响应式循环更新
-          if ((searchParams as any)[pageKey] !== pagination.current) {
-            ;(searchParams as any)[pageKey] = pagination.current
+          if ((searchParams as any)[pageKey] !== pagination.pageNum) {
+            ;(searchParams as any)[pageKey] = pagination.pageNum
           }
-          if ((searchParams as any)[sizeKey] !== pagination.size) {
-            ;(searchParams as any)[sizeKey] = pagination.size
+          if ((searchParams as any)[sizeKey] !== pagination.pageSize) {
+            ;(searchParams as any)[sizeKey] = pagination.pageSize
           }
 
           loading.value = false
@@ -295,7 +295,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
       const response = await apiFn(requestParams)
 
       // 检查请求是否被取消
-      if (currentController.signal.aborted) {
+      if (pageNumController.signal.aborted) {
         throw new Error('请求已取消')
       }
 
@@ -315,11 +315,11 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
       updatePaginationFromResponse(pagination, standardResponse)
 
       // 🔧 修复：避免重复设置相同的值，防止响应式循环更新
-      if ((searchParams as any)[pageKey] !== pagination.current) {
-        ;(searchParams as any)[pageKey] = pagination.current
+      if ((searchParams as any)[pageKey] !== pagination.pageNum) {
+        ;(searchParams as any)[pageKey] = pagination.pageNum
       }
-      if ((searchParams as any)[sizeKey] !== pagination.size) {
-        ;(searchParams as any)[sizeKey] = pagination.size
+      if ((searchParams as any)[sizeKey] !== pagination.pageSize) {
+        ;(searchParams as any)[sizeKey] = pagination.pageSize
       }
 
       // 缓存数据
@@ -339,7 +339,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     } catch (err) {
       if (err instanceof Error && err.message === '请求已取消') {
         // 请求被取消，不做处理
-        return { records: [], total: 0, current: 1, size: 10 }
+        return { records: [], total: 0, pageNum: 1, pageSize: 10 }
       }
 
       data.value = []
@@ -348,7 +348,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     } finally {
       loading.value = false
       // 只有当前控制器是活跃的才清空
-      if (abortController === currentController) {
+      if (abortController === pageNumController) {
         abortController = null
       }
     }
@@ -357,16 +357,17 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
   // 获取数据 (保持当前页)
   const getData = async (params?: Partial<P>): Promise<ApiResponse<T> | void> => {
     try {
+      console.log('获取数据', params)
       return await fetchData(params)
     } catch {
       // 错误已在 fetchData 中处理
-      return Promise.resolve()
+      // return Promise.resolve()
     }
   }
 
   // 分页获取数据 (重置到第一页) - 专门用于搜索场景
   const getDataByPage = async (params?: Partial<P>): Promise<ApiResponse<T> | void> => {
-    pagination.current = 1
+    pagination.pageNum = 1
     ;(searchParams as any)[pageKey] = 1
 
     // 🔧 搜索时清空当前搜索条件的缓存，确保获取最新数据
@@ -403,8 +404,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     Object.assign(searchParams, apiParams || {}, defaultPagination)
 
     // 重置分页
-    pagination.current = 1
-    pagination.size = (defaultPagination as any)[sizeKey]
+    pagination.pageNum = 1
+    pagination.pageSize = (defaultPagination as any)[sizeKey]
 
     // 清空错误状态
     error.value = null
@@ -423,7 +424,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
   }
 
   // 防重复调用的标志
-  let isCurrentChanging = false
+  let ispageNumChanging = false
 
   // 处理分页大小变化
   const handleSizeChange = async (newSize: number): Promise<void> => {
@@ -431,8 +432,8 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
 
     debouncedGetDataByPage.cancel()
 
-    pagination.size = newSize
-    pagination.current = 1
+    pagination.pageSize = newSize
+    pagination.pageNum = 1
     ;(searchParams as any)[sizeKey] = newSize
     ;(searchParams as any)[pageKey] = 1
 
@@ -446,21 +447,21 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
     if (newCurrent <= 0) return
 
     // 🔧 修复：防止重复调用
-    if (isCurrentChanging) {
+    if (ispageNumChanging) {
       return
     }
 
     // 🔧 修复：如果当前页没有变化，不需要重新请求
-    if (pagination.current === newCurrent) {
+    if (pagination.pageNum === newCurrent) {
       logger.log('分页页码未变化，跳过请求')
       return
     }
 
     try {
-      isCurrentChanging = true
+      ispageNumChanging = true
 
       // 🔧 修复：只更新必要的状态
-      pagination.current = newCurrent
+      pagination.pageNum = newCurrent
       // 只有当 searchParams 的分页字段与新值不同时才更新
       if ((searchParams as any)[pageKey] !== newCurrent) {
         ;(searchParams as any)[pageKey] = newCurrent
@@ -468,7 +469,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
 
       await getData()
     } finally {
-      isCurrentChanging = false
+      ispageNumChanging = false
     }
   }
 
@@ -477,7 +478,7 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
   // 新增数据后刷新 - 回到第一页，清空分页缓存
   const refreshAfterAdd = async (): Promise<void> => {
     debouncedGetDataByPage.cancel()
-    pagination.current = 1
+    pagination.pageNum = 1
     ;(searchParams as any)[pageKey] = 1
     invalidateCache(CacheInvalidationStrategy.CLEAR_PAGINATION, '新增数据')
     await getData()
@@ -492,9 +493,9 @@ export function useTable<T = unknown, P extends BaseRequestParams = BaseRequestP
   // 删除数据后刷新 - 智能处理页码
   const refreshAfterDelete = async (): Promise<void> => {
     // 如果当前页只有1条数据，且不是第1页，则回到上一页
-    if (data.value.length === 1 && pagination.current > 1) {
-      pagination.current = pagination.current - 1
-      ;(searchParams as any)[pageKey] = pagination.current
+    if (data.value.length === 1 && pagination.pageNum > 1) {
+      pagination.pageNum = pagination.pageNum - 1
+      ;(searchParams as any)[pageKey] = pagination.pageNum
     }
 
     invalidateCache(CacheInvalidationStrategy.CLEAR_CURRENT, '删除数据')

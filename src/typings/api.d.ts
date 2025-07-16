@@ -12,9 +12,11 @@ declare namespace Api {
       // 状态码
       code: number
       // 消息
-      msg: string
+      message: string
       // 数据
       data: T
+      // 链路追踪 ID
+      traceId?: string
     }
   }
 
@@ -23,15 +25,15 @@ declare namespace Api {
     /** 分页参数 */
     interface PaginatingParams {
       /** 当前页码 */
-      current: number
+      pageNum: number
       /** 每页条数 */
-      size: number
+      pageSize: number
       /** 总条数 */
       total: number
     }
 
     /** 通用搜索参数 */
-    type PaginatingSearchParams = Pick<PaginatingParams, 'current' | 'size'>
+    type PaginatingSearchParams = Pick<PaginatingParams, 'pageNum' | 'pageSize'>
 
     /** 启用状态 */
     type EnableStatus = '1' | '2'

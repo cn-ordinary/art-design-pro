@@ -105,6 +105,7 @@ export function handleError(error: AxiosError<ErrorResponse>): never {
     })
   }
 
+  console.log(statusCode)
   // 处理 HTTP 状态码错误
   const message = statusCode
     ? getErrorMessage(statusCode)
