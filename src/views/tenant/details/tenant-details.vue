@@ -34,3 +34,8 @@
   const route = useRoute()
   const tenantId = ref(route.query.tenantId as string)
 </script>
+<style lang="scss" scoped>
+  .new-tab {
+    border: 0;
+  }
+</style>

@@ -38,6 +38,11 @@
             <ElInput v-model="info.contactPhone" placeholder="电话号码"></ElInput>
           </ElFormItem>
         </ElCol>
+        <ElCol :span="16">
+          <ElFormItem label="描述信息" prop="remark">
+            <ElInput type="textarea" v-model="info.remark" placeholder="描述信息"></ElInput>
+          </ElFormItem>
+        </ElCol>
       </ElRow>
     </ElForm>
   </ElCard>

@@ -1,6 +1,7 @@
 import { SearchFormItem } from '@/types'
 import AccountList from '../components/account-list.vue'
 import roleList from '../components/role-list.vue'
+import permissionList from '../components/permission-list.vue'
 
 // 租户详情TABS数据源
 export const tenantDetailsTabs = [
@@ -16,8 +17,8 @@ export const tenantDetailsTabs = [
   },
   {
     label: '权限管理',
-    name: 'roleList',
-    component: roleList
+    name: 'permissionList',
+    component: permissionList
   }
 ]
 
@@ -53,7 +54,7 @@ export const formAccountItems: SearchFormItem[] = [
   {
     label: '邮箱地址',
     prop: 'email',
-    type: 'select',
+    type: 'input',
     config: { clearable: true }
   }
 ]

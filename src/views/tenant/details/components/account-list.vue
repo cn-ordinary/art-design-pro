@@ -47,7 +47,7 @@
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import Search from '@/components/core/forms/art-from-search/index.vue'
   import { formAccountItems, DEFAULT_SEARCH } from '../../details/form/form.config'
-  import { ElMessageBox, ElMessage, ElTag, ElAvatar } from 'element-plus'
+  import { ElMessageBox, ElMessage, ElTag } from 'element-plus'
   import { useTable } from '@/composables/useTable'
   import { TenantService } from '@/api/tenant-api'
   import { ref, onMounted } from 'vue'
@@ -239,23 +239,4 @@
   }
 </script>
 
-<style lang="scss" scoped>
-  .user-page {
-    :deep(.user) {
-      .avatar {
-        width: 40px;
-        height: 40px;
-        border-radius: 6px;
-      }
-
-      > div {
-        margin-left: 10px;
-
-        .user-name {
-          font-weight: 500;
-          color: var(--art-text-gray-800);
-        }
-      }
-    }
-  }
-</style>
+<style lang="scss" scoped></style>
