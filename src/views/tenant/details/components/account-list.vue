@@ -1,10 +1,10 @@
 <!-- 租户列表 -->
 <template>
-  <div class="user-page art-full-height">
+  <div class="user-page art-full-height pt-40">
     <!-- 筛选表单 -->
     <Search
       v-model="searchFormData"
-      :formItems="formItems"
+      :formItems="formAccountItems"
       :defaultValue="DEFAULT_SEARCH"
       @reset="resetSearchParams"
       @search="handleSearch"
@@ -33,12 +33,12 @@
       </ArtTable>
 
       <!-- 添加编辑 -->
-      <TenantDialog
+      <!-- <TenantDialog
         v-model:visible="dialogVisible"
         :type="dialogType"
         :row-data="rowData"
         @submit="handleDialogSubmit"
-      />
+      /> -->
     </ElCard>
   </div>
 </template>
@@ -46,7 +46,7 @@
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
   import Search from '@/components/core/forms/art-from-search/index.vue'
-  import { formItems, DEFAULT_SEARCH } from '../../details/form/form.config'
+  import { formAccountItems, DEFAULT_SEARCH } from '../../details/form/form.config'
   import { ElMessageBox, ElMessage, ElTag, ElAvatar } from 'element-plus'
   import { useTable } from '@/composables/useTable'
   import { TenantService } from '@/api/tenant-api'
@@ -54,13 +54,13 @@
   import type { QueryTenantAccountList, SelectOption } from '@/types'
   // import TenantDialog from './components/tenant-dialog.vue'
   import { OperateType } from '@/enums/formEnum'
-  import { GENDER_ENUM } from '@/enums/system/account'
   import { SupportService } from '@/api/support-api'
+  import { GENDER_TYPE } from '@/const'
 
-  defineOptions({ name: 'TenantManage' })
+  defineOptions({ name: 'TenantAccountList' })
 
   // 获取路由参数
-  const props = defineProps<{ tenantId: string | number }>()
+  const route = useRoute()
 
   const { getTenantAccountPage } = TenantService
 
@@ -77,17 +77,36 @@
   const selectedRows = ref<QueryTenantAccountList[]>([])
 
   // 搜索表单数据
-  const searchFormData = ref({ ...DEFAULT_SEARCH, tenantId: props.tenantId })
+  const searchFormData = ref({ ...DEFAULT_SEARCH, tenantId: route.query.tenantId })
 
   // 租户状态下拉选项
-  const tenantStatusOptions = ref<SelectOption[]>([])
-
-  // 获取租户状态字典
+  const genderOptions = ref<SelectOption[]>([])
   onMounted(async () => {
-    const data = await SupportService.getDictOptions('TENANT_STATUS')
-    tenantStatusOptions.value = data
+    const data = await SupportService.getDictOptions(GENDER_TYPE)
+    genderOptions.value = data
   })
 
+  // 构建映射(提供给表格渲染用户性别使用)
+  const genderMap = computed(() => {
+    const map = new Map()
+    genderOptions.value.forEach((opt) => {
+      map.set(opt.value, { label: opt.label, type: opt.type || 'info' })
+    })
+    return map
+  })
+
+  // 监听路由参数变化，更新搜索表单数据，重新获取获取数据
+  watch(
+    () => route.query.tenantId,
+    (newId, oldId) => {
+      if (newId && newId !== oldId) {
+        searchFormData.value.tenantId = newId as string
+        getDataByPage(searchFormData.value)
+      }
+    }
+  )
+
+  // ---------------------------------------------------表格相关---------------------------------------------------
   const {
     columns,
     columnChecks,
@@ -99,8 +118,8 @@
     onPageSizeChange: handleSizeChange,
     onCurrentPageChange: handleCurrentChange,
     refreshAll: refresh,
-    refreshAfterCreate: refreshAfterAdd,
-    refreshAfterUpdate: refreshAfterEdit,
+    // refreshAfterCreate: refreshAfterAdd,
+    // refreshAfterUpdate: refreshAfterEdit,
     refreshAfterRemove: refreshAfterDelete
   } = useTable<QueryTenantAccountList>({
     // 核心配置
@@ -116,24 +135,24 @@
         { type: 'index', width: 60, label: '序号' },
         { prop: 'accountName', label: '用户名称 ' },
         { prop: 'nickname', label: '用户昵称' },
-        {
-          prop: 'avatar',
-          label: '用户头像',
-          formatter: (row) => {
-            return h(ElAvatar, { src: row.avatar })
-          }
-        },
+        // {
+        //   prop: 'avatar',
+        //   label: '用户头像',
+        //   formatter: (row) => {
+        //     return h(ElAvatar, { src: row.avatar })
+        //   }
+        // },
         { prop: 'email', width: 150, label: '邮箱地址' },
         { prop: 'mobile', label: '手机号码' },
         {
           prop: 'gender',
-          label: '用户性别',
+          label: '性别',
           formatter: (row) => {
-            return row.gender === GENDER_ENUM.MAN
-              ? h(ElTag, { type: 'primary' }, () => '男')
-              : row.gender === GENDER_ENUM.WOMAN
-                ? h(ElTag, { type: 'danger' }, () => '女')
-                : h(ElTag, { type: 'info' }, () => '未知')
+            const gender = genderMap.value.get(row.gender.toString())
+            if (gender) {
+              return h(ElTag, { type: gender.type }, () => gender.label)
+            }
+            return h(ElTag, { type: 'info' }, () => '未知')
           }
         },
         {
@@ -189,18 +208,18 @@
     })
   }
 
-  /**
-   * 处理弹窗提交事件
-   */
-  const handleDialogSubmit = async () => {
-    try {
-      dialogVisible.value = false
-      await (dialogType.value === OperateType.ADD ? refreshAfterAdd() : refreshAfterEdit())
-      rowData.value = {}
-    } catch (error) {
-      console.error('提交失败:', error)
-    }
-  }
+  // /**
+  //  * 处理弹窗提交事件
+  //  */
+  // const handleDialogSubmit = async () => {
+  //   try {
+  //     dialogVisible.value = false
+  //     await (dialogType.value === OperateType.ADD ? refreshAfterAdd() : refreshAfterEdit())
+  //     rowData.value = {}
+  //   } catch (error) {
+  //     console.error('提交失败:', error)
+  //   }
+  // }
 
   /**
    * 处理搜索事件
@@ -218,14 +237,6 @@
     selectedRows.value = selection
     console.log('选中行数据:', selectedRows.value)
   }
-
-  watch(
-    () => props.tenantId,
-    (newVal) => {
-      searchFormData.value.tenantId = newVal
-    },
-    { immediate: true }
-  )
 </script>
 
 <style lang="scss" scoped>

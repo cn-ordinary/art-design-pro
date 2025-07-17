@@ -25,3 +25,7 @@ export interface QueryTenantPageRes {
   tenantStatus: number
   createTime: string
 }
+
+export interface QueryTenantInfoRes extends QueryTenantPageRes {
+  remark: string
+}

@@ -4,6 +4,8 @@
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+  defineOptions({ name: 'TenantAccountList' })
+</script>
 
 <style lang="scss" scoped></style>

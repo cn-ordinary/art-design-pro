@@ -54,6 +54,7 @@
   import type { QueryTenantPageRes, SelectOption } from '@/types'
   import TenantDialog from './components/tenant-dialog.vue'
   import { OperateType } from '@/enums/formEnum'
+  import { TENANT_STATUS } from '@/const'
   import { SupportService } from '@/api/support-api'
   import { useRouter } from 'vue-router'
   import { RoutesAlias } from '@/router/routesAlias'
@@ -78,7 +79,7 @@
   const tenantStatusOptions = ref<SelectOption[]>([])
 
   onMounted(async () => {
-    const data = await SupportService.getDictOptions('TENANT_STATUS')
+    const data = await SupportService.getDictOptions(TENANT_STATUS)
     tenantStatusOptions.value = data
     // 更新表单项中的租户状态选项
     const tenantStatusItem = formItems.find((item) => item.prop === 'tenantStatus')

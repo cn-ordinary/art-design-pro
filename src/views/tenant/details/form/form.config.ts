@@ -5,12 +5,17 @@ import roleList from '../components/role-list.vue'
 // 租户详情TABS数据源
 export const tenantDetailsTabs = [
   {
-    label: '用户列表',
+    label: '用户管理',
     name: 'userAccountList',
     component: AccountList
   },
   {
-    label: '角色列表',
+    label: '角色管理',
+    name: 'roleList',
+    component: roleList
+  },
+  {
+    label: '权限管理',
     name: 'roleList',
     component: roleList
   }
@@ -31,7 +36,8 @@ export const DEFAULT_SEARCH: TenantSearchForm = {
   email: ''
 }
 
-export const formItems: SearchFormItem[] = [
+// 用户列表查询条件
+export const formAccountItems: SearchFormItem[] = [
   {
     label: '用户名称',
     prop: 'accountName',
