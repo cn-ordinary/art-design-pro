@@ -142,7 +142,7 @@
         //     return h(ElAvatar, { src: row.avatar })
         //   }
         // },
-        { prop: 'email', width: 150, label: '邮箱地址' },
+        { prop: 'email', width: 180, label: '邮箱地址' },
         { prop: 'mobile', label: '手机号码' },
         {
           prop: 'gender',
@@ -226,7 +226,7 @@
    */
   const handleSearch = (searchParams: any): void => {
     console.log('接收到搜索参数:', searchParams)
-    // 调用 useTable 的搜索方法，传递搜索参数
+    searchFormData.value.tenantId = route.query.tenantId
     getDataByPage(searchParams)
   }
 

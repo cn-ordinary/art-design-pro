@@ -24,7 +24,7 @@
         :data="data"
         :columns="columns"
         :pagination="pagination"
-        :table-config="{ rowKey: 'id' }"
+        :table-config="{ rowKey: 'packageId' }"
         :layout="{ marginTop: 10 }"
         @row:selection-change="handleSelectionChange"
         @pagination:size-change="handleSizeChange"
@@ -56,7 +56,6 @@
   defineOptions({ name: 'User' })
 
   type UserListItem = Api.User.UserListItem
-  const { width } = useWindowSize()
   const { getTenPackageList } = TenantService
 
   // 弹窗相关
@@ -122,29 +121,8 @@
         packageName: ''
       },
       columnsFactory: () => [
-        { type: 'selection' }, // 勾选列
-        { type: 'index', width: 60, label: '序号' }, // 序号
-        // { type: 'expand' }, // 展开列
-        {
-          prop: 'avatar',
-          label: '用户名',
-          minWidth: width.value < 500 ? 220 : '',
-          formatter: (row) => {
-            return h('div', { class: 'user', style: 'display: flex; align-items: center' }, [
-              h('img', { class: 'avatar', src: row.avatar }),
-              h('div', {}, [
-                h('p', { class: 'user-name' }, row.userName),
-                h('p', { class: 'email' }, row.userEmail)
-              ])
-            ])
-          }
-        },
-        {
-          prop: 'userGender',
-          label: '性别',
-          sortable: true,
-          formatter: (row) => row.userGender
-        },
+        { type: 'selection' },
+        { type: 'index', width: 60, label: '序号' },
         { prop: 'userPhone', label: '手机号' },
         {
           prop: 'status',

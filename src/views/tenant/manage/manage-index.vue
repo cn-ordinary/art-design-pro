@@ -82,7 +82,7 @@
     const data = await SupportService.getDictOptions(TENANT_STATUS)
     tenantStatusOptions.value = data
     // 更新表单项中的租户状态选项
-    const tenantStatusItem = formItems.find((item) => item.prop === 'tenantStatus')
+    const tenantStatusItem = formItems.find((item) => item.prop === 'loginDeviceType')
     if (tenantStatusItem) tenantStatusItem.options = data
   })
 
@@ -137,6 +137,7 @@
           }
         },
         {
+          width: 200,
           prop: 'createTime',
           label: '创建日期',
           sortable: true
